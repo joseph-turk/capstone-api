@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 using CapstoneApi.Models;
 using CapstoneApi.Helpers;
 
@@ -45,7 +46,10 @@ namespace CapstoneApi.Services
 
         public User GetById(Guid id)
         {
-            return _context.Users.Find(id);
+            return _context.Users.Where(u => u.Id == id)
+                .Include(u => u.Events)
+                .ThenInclude(e => e.Registrations)
+                .First();
         }
 
         public User Create(User user, string password)
