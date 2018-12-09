@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using CapstoneApi.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace CapstoneApi.Controllers
 {
@@ -27,7 +28,11 @@ namespace CapstoneApi.Controllers
         public IActionResult Create(RegistrationViewModel viewModel)
         {
             PrimaryContact primaryContact = viewModel.PrimaryContact;
-            Event vmEvent = _context.Events.Find(viewModel.Event.Id);
+            Event vmEvent = _context.Events
+                .Where(e => e.Id == viewModel.Event.Id)
+                .Include(e => e.Registrations)
+                .ThenInclude(r => r.Registrant)
+                .First();
 
             // Add primary contact if necessary
             if (!_context.PrimaryContacts.Any(pc => pc.Name.Equals(primaryContact.Name)
@@ -48,6 +53,7 @@ namespace CapstoneApi.Controllers
             viewModel.Registrants.ForEach(reg =>
             {
                 Registrant registrant = reg;
+                bool isWaitList = false;
 
                 // Add registrant if necessary
                 if (!_context.Registrants.Any(r => r.Name.Equals(registrant.Name)))
@@ -62,6 +68,12 @@ namespace CapstoneApi.Controllers
                         .FirstOrDefault();
                 }
 
+                if (vmEvent.Registrations.Where(r => !r.IsWaitList).Count()
+                    >= vmEvent.Capacity)
+                {
+                    isWaitList = true;
+                }
+
                 // Create registration
                 Registration registration = new Registration
                 {
@@ -69,7 +81,7 @@ namespace CapstoneApi.Controllers
                     PrimaryContact = primaryContact,
                     Registrant = registrant,
                     HasPhotoRelease = true, //TODO: consume photo release field
-                    IsWaitList = false //TODO: handle wait listing
+                    IsWaitList = isWaitList
                 };
 
                 // Add registration if it doesn't already exist

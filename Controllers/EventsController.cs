@@ -95,6 +95,7 @@ namespace CapstoneApi.Controllers
 
             EventDto eventDto = new EventDto
             {
+                Id = item.Id,
                 Name = item.Name,
                 Description = item.Description,
                 Start = item.Start,
