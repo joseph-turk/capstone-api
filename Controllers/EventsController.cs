@@ -41,15 +41,46 @@ namespace CapstoneApi.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<Event>> GetAll()
+        public async Task<ActionResult> GetAll()
         {
-            return _context.Events.ToList();
+            List<EventDto> allEventsDto = new List<EventDto>();
+            List<Event> allEvents = await _context.Events
+                .Include(e => e.Registrations)
+                .ToListAsync();
+
+            allEvents.ForEach(e =>
+            {
+                allEventsDto.Add(new EventDto
+                {
+                    Id = e.Id,
+                    Name = e.Name,
+                    Description = e.Description,
+                    Start = e.Start,
+                    End = e.End,
+                    Capacity = e.Capacity,
+                    ImageId = e.ImageId,
+                    ImageExtension = e.ImageExtension,
+                    IsMyEvent = false,
+                    Registrations = null,
+                    RegistrationCount = e.Registrations.Where(r => !r.IsWaitList).Count(),
+                    WaitListCount = e.Registrations.Where(r => r.IsWaitList).Count()
+                });
+            });
+
+            return Ok(allEventsDto);
         }
 
         [HttpGet("{id}", Name = "GetEvent")]
         public async Task<ActionResult> GetById(Guid id)
         {
             Event item = await _context.Events.FindAsync(id);
+            if (item == null) return NotFound();
+
+            List<Registration> registrations = await _context.Registrations
+                .Where(r => r.Event.Id == id)
+                .Include(r => r.PrimaryContact)
+                .Include(r => r.Registrant)
+                .ToListAsync();
 
             Guid userId;
             Guid.TryParse(this.User.Identity.Name, out userId);
@@ -62,16 +93,23 @@ namespace CapstoneApi.Controllers
                 myEvent = userId.Equals(item.CreatedBy.Id);
             }
 
-            if (item == null) return NotFound();
-
             EventDto eventDto = new EventDto
             {
-                Event = item
+                Name = item.Name,
+                Description = item.Description,
+                Start = item.Start,
+                End = item.End,
+                Capacity = item.Capacity,
+                ImageId = item.ImageId,
+                ImageExtension = item.ImageExtension,
+                RegistrationCount = registrations.Where(r => !r.IsWaitList).Count(),
+                WaitListCount = registrations.Where(r => r.IsWaitList).Count()
             };
 
             if (user != null)
             {
                 eventDto.IsMyEvent = myEvent || user.IsAdmin;
+                eventDto.Registrations = myEvent || user.IsAdmin ? registrations : null;
             }
             else
             {
