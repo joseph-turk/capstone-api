@@ -52,7 +52,10 @@ namespace CapstoneApi.Controllers
             // Iterate over registrants
             viewModel.Registrants.ForEach(reg =>
             {
-                Registrant registrant = reg;
+                Registrant registrant = new Registrant
+                {
+                    Name = reg.Name
+                };
                 bool isWaitList = false;
 
                 // Add registrant if necessary
@@ -80,7 +83,7 @@ namespace CapstoneApi.Controllers
                     Event = vmEvent,
                     PrimaryContact = primaryContact,
                     Registrant = registrant,
-                    HasPhotoRelease = true, //TODO: consume photo release field
+                    HasPhotoRelease = reg.PhotoRelease,
                     IsWaitList = isWaitList
                 };
 
