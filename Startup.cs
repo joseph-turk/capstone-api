@@ -38,8 +38,8 @@ namespace CapstoneApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<CapstoneContext>(opt =>
-                opt.UseLazyLoadingProxies()
-                   .UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));
+                // opt.UseLazyLoadingProxies()
+                opt.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));
 
 
             services.AddAutoMapper();
