@@ -195,10 +195,19 @@ namespace CapstoneApi.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize]
         public IActionResult Update(Guid id, Event item)
         {
-            Event existingEvent = _context.Events.Find(id);
+            User editedBy = _context.Users.Find(Guid.Parse(this.User.Identity.Name));
+            Event existingEvent = _context.Events
+                .Where(e => e.Id == id)
+                .Include(e => e.CreatedBy)
+                .First();
             if (existingEvent == null) return NotFound();
+            if (existingEvent.CreatedBy.Id != editedBy.Id && !editedBy.IsAdmin)
+            {
+                return BadRequest();
+            }
 
             existingEvent.Name = item.Name;
             existingEvent.Description = item.Description;
