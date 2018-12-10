@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CapstoneApi.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace CapstoneApi.Controllers
 {
@@ -21,7 +22,9 @@ namespace CapstoneApi.Controllers
         [HttpGet]
         public ActionResult<List<PrimaryContact>> GetAll()
         {
-            return _context.PrimaryContacts.ToList();
+            return _context.PrimaryContacts
+                .Include(pc => pc.Registrations)
+                .ToList();
         }
     }
 }
