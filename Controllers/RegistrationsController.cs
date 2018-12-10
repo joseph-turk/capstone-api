@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CapstoneApi.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace CapstoneApi.Controllers
 {
@@ -22,6 +23,19 @@ namespace CapstoneApi.Controllers
         public ActionResult<List<Registration>> GetAll()
         {
             return _context.Registrations.ToList();
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult> GetById(Guid id)
+        {
+            Registration registration = await _context.Registrations
+                .Where(r => r.Id == id)
+                .Include(r => r.Registrant)
+                .FirstOrDefaultAsync();
+
+            if (registration == null) return NotFound();
+
+            return Ok(registration);
         }
 
         [HttpPost]
@@ -98,6 +112,60 @@ namespace CapstoneApi.Controllers
             });
 
             return CreatedAtRoute("GetAll", null);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult> Update(Guid id, Registration registration)
+        {
+            Registration existingRegistration = await _context.Registrations.FindAsync(id);
+            if (existingRegistration == null) return NotFound();
+
+            existingRegistration.HasPhotoRelease = registration.HasPhotoRelease;
+            existingRegistration.IsWaitList = registration.IsWaitList;
+
+            _context.Registrations.Update(existingRegistration);
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> Delete(Guid id)
+        {
+            Registration registration = await _context.Registrations
+                .Where(r => r.Id == id)
+                .Include(r => r.Registrant)
+                .Include(r => r.PrimaryContact)
+                .FirstOrDefaultAsync();
+            if (registration == null) return NotFound();
+
+            Registrant registrant = await _context.Registrants
+                .Where(r => r.Id == registration.Registrant.Id)
+                .Include(r => r.Registrations)
+                .FirstOrDefaultAsync();
+
+            PrimaryContact primaryContact = await _context.PrimaryContacts
+                .Where(p => p.Id == registration.PrimaryContact.Id)
+                .Include(p => p.Registrations)
+                .FirstOrDefaultAsync();
+
+            _context.Registrations.Remove(registration);
+
+            // If no other registrations for registrant, remove as well
+            if (registrant.Registrations.Count == 1)
+            {
+                _context.Registrants.Remove(registrant);
+            }
+
+            // If no other registrations for primary contact, remove as well
+            if (primaryContact.Registrations.Count == 1)
+            {
+                _context.PrimaryContacts.Remove(primaryContact);
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok();
         }
     }
 }
