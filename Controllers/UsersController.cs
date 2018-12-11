@@ -109,15 +109,30 @@ namespace CapstoneApi.Controllers
             }
         }
 
+        [HttpGet]
+        public IActionResult GetAll()
+        {
+            Guid userId;
+            Guid.TryParse(this.User.Identity.Name, out userId);
+
+            User user = _userService.GetById(userId);
+            if (!user.IsAdmin) return BadRequest();
+
+            var users = _userService.GetAll();
+
+            return Ok(users);
+        }
+
         [HttpGet("{id}")]
         public IActionResult GetById(Guid id)
         {
             Guid userId;
             Guid.TryParse(this.User.Identity.Name, out userId);
-            if (!userId.Equals(id)) return BadRequest();
+
+            User authUser = _userService.GetById(userId);
+            if (!authUser.Id.Equals(id) && !authUser.IsAdmin) return BadRequest();
 
             User user = _userService.GetById(id);
-
             if (user == null) return NotFound();
 
             return Ok(user);
@@ -128,7 +143,9 @@ namespace CapstoneApi.Controllers
         {
             Guid userId;
             Guid.TryParse(this.User.Identity.Name, out userId);
-            if (!userId.Equals(id)) return BadRequest();
+
+            User authUser = _userService.GetById(userId);
+            if (!authUser.Id.Equals(id) && !authUser.IsAdmin) return BadRequest();
 
             User user = _mapper.Map<User>(userDto);
 

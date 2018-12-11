@@ -92,9 +92,12 @@ namespace CapstoneApi.Services
             }
 
             // Verify old password is correct
-            if (!VerifyPasswordHash(currentPassword, user.PasswordHash, user.PasswordSalt))
+            if (newPassword != null && currentPassword != null)
             {
-                throw new AppException("Old password is incorrect");
+                if (!VerifyPasswordHash(currentPassword, user.PasswordHash, user.PasswordSalt))
+                {
+                    throw new AppException("Old password is incorrect");
+                }
             }
 
             user.Email = userParam.Email;
