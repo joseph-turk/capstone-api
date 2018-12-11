@@ -18,6 +18,7 @@ namespace CapstoneApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class EventsController : ControllerBase
     {
         private readonly CapstoneContext _context;
@@ -41,6 +42,7 @@ namespace CapstoneApi.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult> GetAll()
         {
             List<EventDto> allEventsDto = new List<EventDto>();
@@ -117,6 +119,7 @@ namespace CapstoneApi.Controllers
         }
 
         [HttpGet("{id}", Name = "GetEvent")]
+        [AllowAnonymous]
         public async Task<ActionResult> GetById(Guid id)
         {
             Event item = await _context.Events.FindAsync(id);
@@ -167,7 +170,6 @@ namespace CapstoneApi.Controllers
         }
 
         [HttpPost]
-        [Authorize]
         public IActionResult Create()
         {
             if (Request.HasFormContentType)
@@ -241,7 +243,6 @@ namespace CapstoneApi.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize]
         public IActionResult Update(Guid id)
         {
             User editedBy = _context.Users.Find(Guid.Parse(this.User.Identity.Name));
