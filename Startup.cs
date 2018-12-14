@@ -22,25 +22,24 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using Microsoft.AspNetCore.HttpOverrides;
 
 namespace CapstoneApi
 {
     public class Startup
     {
+        public IConfiguration Configuration { get; }
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
 
-        public IConfiguration Configuration { get; }
-
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<CapstoneContext>(opt =>
-                // opt.UseLazyLoadingProxies()
                 opt.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));
-
 
             services.AddAutoMapper();
 
@@ -49,6 +48,7 @@ namespace CapstoneApi
 
             var appSettings = appSettingsSection.Get<AppSettings>();
             var key = Encoding.ASCII.GetBytes(appSettings.Secret);
+
             services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -95,6 +95,7 @@ namespace CapstoneApi
                 {
                     opt.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
                 });
+
             services.AddCors();
         }
 
@@ -112,13 +113,18 @@ namespace CapstoneApi
             }
 
             app.UseCors(builder =>
-                builder.WithOrigins("http://localhost:3000")
+                builder.AllowAnyOrigin()
                        .AllowAnyHeader()
                        .AllowAnyMethod()
                        .AllowCredentials()
             );
             app.UseDefaultFiles();
             app.UseStaticFiles();
+
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            });
 
             app.UseAuthentication();
             app.UseMvc();
