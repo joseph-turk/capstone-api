@@ -6,9 +6,11 @@ using CapstoneApi.Models;
 using CapstoneApi.Dtos;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CapstoneApi.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class RegistrationsController : ControllerBase
@@ -40,6 +42,7 @@ namespace CapstoneApi.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public IActionResult Create(RegistrationDto registrationDto)
         {
             PrimaryContact primaryContact = registrationDto.PrimaryContact;
