@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using CapstoneApi.Dtos;
+using CapstoneApi.Models;
 
-namespace CapstoneApi.Models
+namespace CapstoneApi.Dtos
 {
-    public class RegistrationViewModel
+    public class RegistrationDto
     {
         public Event Event { get; set; }
         public PrimaryContact PrimaryContact { get; set; }

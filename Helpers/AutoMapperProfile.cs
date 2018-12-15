@@ -1,5 +1,6 @@
 using AutoMapper;
 using CapstoneApi.Models;
+using CapstoneApi.Dtos;
 
 namespace CapstoneApi.Helpers
 {

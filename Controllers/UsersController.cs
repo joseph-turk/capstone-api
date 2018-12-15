@@ -10,6 +10,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using CapstoneApi.Services;
 using CapstoneApi.Models;
+using CapstoneApi.Dtos;
 using CapstoneApi.Helpers;
 using System.Linq;
 

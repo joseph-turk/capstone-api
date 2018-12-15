@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using CapstoneApi.Models;
+using CapstoneApi.Dtos;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 
@@ -39,11 +40,11 @@ namespace CapstoneApi.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create(RegistrationViewModel viewModel)
+        public IActionResult Create(RegistrationDto registrationDto)
         {
-            PrimaryContact primaryContact = viewModel.PrimaryContact;
+            PrimaryContact primaryContact = registrationDto.PrimaryContact;
             Event vmEvent = _context.Events
-                .Where(e => e.Id == viewModel.Event.Id)
+                .Where(e => e.Id == registrationDto.Event.Id)
                 .Include(e => e.Registrations)
                 .ThenInclude(r => r.Registrant)
                 .First();
@@ -59,12 +60,12 @@ namespace CapstoneApi.Controllers
             else
             {
                 primaryContact = _context.PrimaryContacts
-                    .Where(pc => pc.Name.Equals(viewModel.PrimaryContact.Name))
+                    .Where(pc => pc.Name.Equals(registrationDto.PrimaryContact.Name))
                     .FirstOrDefault();
             }
 
             // Iterate over registrants
-            viewModel.Registrants.ForEach(reg =>
+            registrationDto.Registrants.ForEach(reg =>
             {
                 Registrant registrant = new Registrant
                 {

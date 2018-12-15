@@ -1,6 +1,6 @@
 using System;
 
-namespace CapstoneApi.Models
+namespace CapstoneApi.Dtos
 {
     public class UserDto
     {
